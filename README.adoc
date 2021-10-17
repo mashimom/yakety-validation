@@ -40,15 +40,16 @@ toc::[]
 * [x] spock integration tests
 * [x] git ignores
 . functionalities:
-* [ ] validation is a predicate wrapper
+* [x] validation is a predicate wrapper
 ** invalid when predicate fails to accept
-* [ ] the validation holds a function to get the value from the aggregate into the predicate.
-* [ ] validation returns `Violation` reference on failure
-** [ ] Violation reference can be anything (String, Number), but if the validations are immutable by design the validation itself can be a violation;
-* [ ] Stream API support:
+* [x] the validation can hold a function to get the value from the aggregate into the predicate.
+* [x] validation returns `Violation` reference on failure
+** [ ] [.line-through]#Violation reference can be anything (String, Number), but if the validations are immutable by design the validation itself can be a violation;#
+** [x] Violation contains a violation code String
+* [x] Stream API support:
 ** [ ] stream of validations, then filter/remove them when accepting/invalidating a subject, resulting on a stream of violations;
-** [ ] with a list of violations create a map from subjects' identifiers to violations found on the subject.
-* [ ] Violation can be used to generate a textual explanation of the problem found
+** [x] with a list of violations create a map from subjects' identifiers to violations found on the subject.
+* [x] Violation can be used to generate a textual explanation of the problem found
 
 == How to build
 
