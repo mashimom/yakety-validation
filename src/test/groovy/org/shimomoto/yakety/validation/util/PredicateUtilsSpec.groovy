@@ -1,11 +1,25 @@
 package org.shimomoto.yakety.validation.util
 
+import spock.lang.IgnoreRest
+import spock.lang.Specification
+
 import java.util.function.Function
 import java.util.function.Predicate
 
-import spock.lang.Specification
-
 class PredicateUtilsSpec extends Specification {
+
+	@IgnoreRest
+	def "Derived predicate works"() {
+		given:
+		Function<String, Integer> fn = (String s) -> Integer.valueOf(s.length())
+		Predicate<Integer> p = (Integer i) -> i == 0
+		when:
+		def dp = PredicateUtils.derivedPredicate(p, fn)
+
+		then:
+		dp.test("")
+		!dp.test("abc")
+	}
 
 	def "logic gates"() {
 		expect:
@@ -42,17 +56,5 @@ class PredicateUtilsSpec extends Specification {
 		1 | false | true  | false | true  | true  | false | true  | false
 		2 | true  | false | false | true  | true  | false | true  | false
 		3 | true  | true  | true  | false | true  | false | false | true
-	}
-
-	def "Derived predicate works"() {
-		given:
-		Function<String, Integer> fn = (String s) -> Integer.valueOf(s.length())
-		Predicate<Integer> p = (Integer i) -> i == 0
-		when:
-		def dp = PredicateUtils.derivedPredicate(p, fn)
-
-		then:
-		dp.test("")
-		!dp.test("abc")
 	}
 }
