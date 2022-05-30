@@ -35,4 +35,17 @@ public class AggregateUtils {
 		}
 		return null;
 	}
+
+	public static Optional<MovieRatings> parseRating(final JsonNode movie) {
+		return Optional.ofNullable(movie)
+				.map(jn -> jn.get("rating"))
+				.map(JsonNode::asText)
+				.flatMap(MovieRatings::parse);
+	}
+
+	@Nullable
+	public static MovieRatings unsafeParseRating(final JsonNode movie) {
+		return parseRating(movie)
+				.orElse(null);
+	}
 }
