@@ -2,17 +2,18 @@ import java.util.function.Predicate
 
 //noinspection GroovyAssignabilityCheck
 plugins {
-    id 'build-dashboard'
-    id 'com.github.ben-manes.versions' version '0.39.0'
-    id 'com.palantir.git-version' version '0.12.3'
-    id 'groovy'
-    id 'idea'
-    id 'io.freefair.lombok' version '6.2.0'
-    id 'jacoco'
-    id 'java-library'
-    id 'nebula.maven-publish' version '17.3.2'
-    id 'nebula.project' version '8.0.0'
-    id 'project-report'
+	id 'build-dashboard'
+	id 'com.github.ben-manes.versions' version '0.42.0'
+	id 'com.palantir.git-version' version '0.15.0'
+	id 'groovy'
+	id 'idea'
+	id 'io.freefair.lombok' version '6.4.3'
+	id 'jacoco'
+	id 'java-library'
+	id 'nebula.maven-publish' version '18.4.0'
+	id 'nebula.project' version '9.6.3'
+	id 'project-report'
+	id 'signing'
 }
 
 apply plugin: 'nebula.facet'
@@ -28,96 +29,112 @@ sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
 facets {
-    integrationTest {
-        parentSourceSet = 'main'
-        //noinspection GroovyAssignabilityCheck
-        testTaskName = 'integrationTest'
-    }
+	integrationTest {
+		parentSourceSet = 'main'
+		//noinspection GroovyAssignabilityCheck
+		testTaskName = 'integrationTest'
+	}
 }
 
 //noinspection GroovyAssignabilityCheck
 configurations {
-    integrationTestImplementation {
-        extendsFrom testImplementation
-    }
-    integrationTestRuntime {
-        extendsFrom testRuntimeOnly
-    }
+	integrationTestImplementation {
+		extendsFrom testImplementation
+	}
+	integrationTestRuntime {
+		extendsFrom testRuntimeOnly
+	}
 }
 //noinspection GroovyAssignabilityCheck
 repositories {
-    google()
-    mavenCentral()
+	google()
+	mavenCentral()
 }
 
 dependencies {
-    annotationProcessor 'org.jetbrains:annotations:22.0.0'
-    compileOnly 'org.jetbrains:annotations:22.0.0'
+	annotationProcessor 'org.jetbrains:annotations:22.0.0'
+	compileOnly 'org.jetbrains:annotations:22.0.0'
 
-    implementation 'com.codepoetics:protonpack:1.16'
-    implementation 'ch.qos.logback:logback-classic:1.2.10'
+	implementation 'com.codepoetics:protonpack:1.16'
+	implementation 'ch.qos.logback:logback-classic:1.2.10'
 
 //    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'org.codehaus.groovy:groovy-all:3.0.9'
-    testImplementation 'org.hamcrest:hamcrest-core:2.2'
-    testImplementation platform('org.spockframework:spock-bom:2.1-groovy-3.0')
-    testImplementation 'org.spockframework:spock-core'
-    testImplementation 'org.spockframework:spock-junit4'
-    testImplementation('com.athaydes:spock-reports:2.2.0-groovy-3.0') {
-        transitive = false
-    }
+	testImplementation 'org.codehaus.groovy:groovy-all:3.0.9'
+	testImplementation 'org.hamcrest:hamcrest-core:2.2'
+	testImplementation platform('org.spockframework:spock-bom:2.1-groovy-3.0')
+	testImplementation 'org.spockframework:spock-core'
+	testImplementation 'org.spockframework:spock-junit4'
+	testImplementation('com.athaydes:spock-reports:2.2.0-groovy-3.0') {
+		transitive = false
+	}
 
 //    testRuntimeOnly 'cglib:cglib-nodep:3.2.12'
-    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.12.8'
-    testRuntimeOnly 'org.objenesis:objenesis:3.2'
+	testRuntimeOnly 'net.bytebuddy:byte-buddy:1.12.8'
+	testRuntimeOnly 'org.objenesis:objenesis:3.2'
 
-    integrationTestImplementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
+	integrationTestImplementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
 
 }
 
 test {
-    useJUnitPlatform()
-    testLogging {
+	useJUnitPlatform()
+	testLogging {
 //        events 'passed', 'skipped', 'failed'
-        events 'failed'
-    }
-    finalizedBy jacocoTestReport
+		events 'failed'
+	}
+	finalizedBy jacocoTestReport
 }
 
 integrationTest {
-    useJUnitPlatform()
-    maxHeapSize = "4096m"
-    testLogging {
-        events 'passed', 'skipped', 'failed'
-    }
+	useJUnitPlatform()
+	maxHeapSize = "4096m"
+	testLogging {
+		events 'passed', 'skipped', 'failed'
+	}
 //    finalizedBy jacocoTestReport
-    outputs.upToDateWhen { false }
+	outputs.upToDateWhen { false }
 }
 
 javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 
 def isNonStable = { version ->
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
-    def regex = /^[0-9,.v-]+(-r)?$/
-    return !stableKeyword && !(version ==~ regex)
+	def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+	def regex = /^[0-9,.v-]+(-r)?$/
+	return !stableKeyword && !(version ==~ regex)
 } as Predicate
 
 tasks.named("dependencyUpdates").configure {
-    rejectVersionIf {
-        isNonStable(it.candidate.version)
-    }
+	rejectVersionIf {
+		isNonStable(it.candidate.version)
+	}
 
-    rejectVersionIf {
-        isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)
-    }
+	rejectVersionIf {
+		isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)
+	}
 
-    resolutionStrategy {
-        componentSelection {
-            all {
-                if (isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)) {
-                    reject('Release candidate')
-                }
-            }
-        }
-    }
+	resolutionStrategy {
+		componentSelection {
+			all {
+				if (isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)) {
+					reject('Release candidate')
+				}
+			}
+		}
+	}
+}
+
+publishing {
+	repositories {
+		maven {
+			url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+			credentials {
+				username repoUser
+				password repoPassword
+			}
+		}
+	}
+}
+
+signing {
+	sign configurations.archives
 }
