@@ -13,9 +13,7 @@ public enum MovieRatings implements Predicate<String>, HasExternalValue {
 	N_A("N/A"),
 	NOT_RATED("Not rated");
 
-	@Getter
 	public final String externalValue;
-
 	MovieRatings(final String value) {
 		this.externalValue = value;
 	}
@@ -25,14 +23,18 @@ public enum MovieRatings implements Predicate<String>, HasExternalValue {
 						.anyMatch(mr -> mr.test(value));
 	}
 
-	@Override
-	public boolean test(final @Nullable String s) {
-		return externalValue.equalsIgnoreCase(s);
-	}
-
 	public static Optional<MovieRatings> parse(final @Nullable String value) {
 		return Arrays.stream(MovieRatings.values())
 				.filter(mr -> mr.test(value))
 				.findFirst();
+	}
+
+	public String getExternalValue() {
+		return externalValue;
+	}
+
+	@Override
+	public boolean test(final @Nullable String s) {
+		return externalValue.equalsIgnoreCase(s);
 	}
 }

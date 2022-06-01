@@ -6,9 +6,9 @@ class MovieRatingsIT extends Specification {
 
     def "sanity check"() {
         given:
-        def domain = EnumSet.of(MovieRatings)
+        List<MovieRatings> domain = MovieRatings.values().toList()
 
         expect:
-        domain*.externalValue.size() == domain.size()
+        domain.collect { it.getExternalValue() }.toSet().size() == domain.size()
     }
 }

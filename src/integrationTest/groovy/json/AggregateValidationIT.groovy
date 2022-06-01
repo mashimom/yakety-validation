@@ -8,6 +8,7 @@ import spock.lang.Specification
 class AggregateValidationIT extends Specification {
 
 
+	@Ignore
 	def "IS_UNRATED_AND_RELEASED accepts"() {
 		given:
 		def movie = Movies.loadList()[22]
