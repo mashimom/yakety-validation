@@ -10,23 +10,33 @@ plugins {
 	id 'io.freefair.lombok' version '6.4.3'
 	id 'jacoco'
 	id 'java-library'
-	id 'nebula.maven-publish' version '18.4.0'
-	id 'nebula.project' version '9.6.3'
+	id 'maven-publish'
+	id 'nebula.facet' version '9.6.3'
 	id 'project-report'
 	id 'signing'
 }
 
-apply plugin: 'nebula.facet'
-
-defaultTasks 'clean', 'printVersion', 'classes', 'projectReport', 'buildDashboard', 'check', 'jar', 'publishToMavenLocal'
+defaultTasks 'clean', 'printVersion', 'classes', 'projectReport', 'buildDashboard', 'check', 'assemble', 'publishToMavenLocal'
 
 //noinspection GroovyUnusedAssignment
 group = 'org.shimomoto'
 //noinspection GroovyAssignabilityCheck
 version gitVersion()
+
+description = """\
+				The idea is to create various simple validation rules 
+				that may return a violation reference (indication of what is wrong); 
+				opposed to a single check that can only tell it is wrong 
+				but not what specifically.""".stripIndent()
+
 //noinspection GroovyUnusedAssignment
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
+
+java {
+	withJavadocJar()
+	withSourcesJar()
+}
 
 facets {
 	integrationTest {
@@ -44,6 +54,7 @@ configurations {
 	integrationTestRuntime {
 		extendsFrom testRuntimeOnly
 	}
+	umlDoclet
 }
 //noinspection GroovyAssignabilityCheck
 repositories {
@@ -74,6 +85,7 @@ dependencies {
 
 	integrationTestImplementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
 
+	umlDoclet 'nl.talsmasoftware:umldoclet:2.0.17'
 }
 
 test {
@@ -89,13 +101,34 @@ integrationTest {
 	useJUnitPlatform()
 	maxHeapSize = "4096m"
 	testLogging {
-		events 'passed', 'skipped', 'failed'
+//		events 'passed', 'skipped', 'failed'
+		events 'failed'
 	}
-//    finalizedBy jacocoTestReport
+	finalizedBy jacocoTestReport
 	outputs.upToDateWhen { false }
 }
 
-javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+javadoc {
+	exclude "lombok.config"
+	options.addStringOption('Xdoclint:none', '-quiet')
+	options.docletpath = configurations.umlDoclet.files.asType(List)
+	options.doclet = "nl.talsmasoftware.umldoclet.UMLDoclet"
+	options.addBooleanOption('html5', true)
+}
+
+jar {
+	manifest {
+		attributes(
+				"Name": project.name,
+//				"Specification-Title": project.description
+//				"Specification-Version": project.version,
+//				"Specification-Vendor": project.group,
+//				"Implementation-Title": project.description,
+//				"Implementation-Version": project.version,
+//				"Implementation-Vendor": project.group
+		)
+	}
+}
 
 def isNonStable = { version ->
 	def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
@@ -124,17 +157,49 @@ tasks.named("dependencyUpdates").configure {
 }
 
 publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			groupId = project.group
+			artifactId = project.name
+			version = project.version
+
+			from components.java
+			pom {
+				name = project.name
+				description = project.description
+				url = 'https://github.com/mashimom/yakety-validation'
+				licenses {
+					license {
+						name = 'MIT License'
+						url = 'http://www.opensource.org/licenses/mit-license.php'
+					}
+				}
+				developers {
+					developer {
+						id = 'mashimom'
+						name = 'Marco Shimomoto'
+						email = 'mashimom[at]shimomoto.org'
+					}
+				}
+				scm {
+					url = 'https://github.com/mashimom/yakety-validation'
+					connection = 'scm:git:git://github.com/mashimom/yakety-validation.git'
+					developerConnection = 'scm:git:git@github.com:mashimom/yakety-validation.git'
+				}
+			}
+		}
+	}
 	repositories {
 		maven {
-			url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+			url 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
 			credentials {
-				username repoUser
-				password repoPassword
+				username sonatypeUsername
+				password sonatypePassword
 			}
 		}
 	}
 }
 
 signing {
-	sign configurations.archives
+	sign publishing.publications.mavenJava
 }
